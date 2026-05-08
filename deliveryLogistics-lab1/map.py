@@ -1,26 +1,37 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
-
-sys.stdin = open("duom_cut.txt","r")
-sys.stdout = open("mapout.txt","w")
-
 
 for line in sys.stdin:
     line = line.strip()
-    line = line[2:len(line)-2]
-    susstring = line.split('}}{{')
-    for stopas in susstring:
-      #Sustojimo klientu skaicius
-      klientai = None
-      #sustojimo savaites diena
-      diena = None
-      parstrings = stopas.split('}{')
-      for parstring in parstrings: 
-        (vardas, reiksme) = parstring.split('=')
-        if(reiksme != ''):
-          if(vardas == 'Sustojimo klientu skaicius'):
-            klientai=int(reiksme)
-          if(vardas == 'sustojimo savaites diena'):
-            diena=int(reiksme)
-      if(klientai != None and diena != None):
-        print('%s\t%s' % (diena, klientai))
+    if not line:
+        continue
+    line = line[2:len(line) - 2]
+    stops = line.split('}}{{')
+
+    for stop in stops:
+        marsrutas = None
+        svoris = None
+        siuntu_skaicius = None
+        zona = None
+
+        for field in stop.split('}{'):
+            if '=' not in field:
+                continue
+            key, val = field.split('=', 1)
+            if key == 'marsrutas' and val:
+                marsrutas = val
+            elif key == 'svoris' and val:
+                try:
+                    svoris = float(val)
+                except ValueError:
+                    pass
+            elif key == 'siuntu skaicius' and val:
+                try:
+                    siuntu_skaicius = int(val)
+                except ValueError:
+                    pass
+            elif key == 'geografine zona' and val:
+                zona = val
+
+        if marsrutas and svoris is not None and siuntu_skaicius is not None and zona:
+            print('%s\t%s\t%s\t%s' % (marsrutas, svoris, siuntu_skaicius, zona))

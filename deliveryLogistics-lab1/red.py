@@ -1,41 +1,47 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python3
 import sys
 
-sys.stdin = open("smapout.txt","r")
-sys.stdout = open("redout.txt","w")
+ZONES = ['Z1', 'Z2', 'Z3']
 
-current_diena = None
-current_count = 0
-diena = None
+print('marsrutas\tsvoris_sum\tsiuntu_sum\t' + '\t'.join(ZONES))
 
-# input comes from STDIN
+current_route = None
+svoris_sum = 0.0
+siuntu_sum = 0
+zone_counts = {z: 0 for z in ZONES}
+
+
+def flush(route):
+    counts = '\t'.join(str(zone_counts[z]) for z in ZONES)
+    print('%s\t%.2f\t%d\t%s' % (route, svoris_sum, siuntu_sum, counts))
+
+
 for line in sys.stdin:
-    # remove leading and trailing whitespace
     line = line.strip()
-
-    # parse the input we got from mapper.py
-    diena, count = line.split('\t', 1)
-
-    # convert count (currently a string) to int
-    try:
-        count = int(count)
-    except ValueError:
-        # count was not a number, so silently
-        # ignore/discard this line
+    parts = line.split('\t')
+    if len(parts) != 4:
         continue
 
-    # this IF-switch only works because Hadoop sorts map output
-    # by key (here: word) before it is passed to the reducer
-    if current_diena == diena:
-        current_count += count
-    else:
-        if current_diena != None:
-            # write result to STDOUT
-            print ('%s\t%s' % (current_diena, current_count))
-        current_count = count
-        current_diena = diena
+    route, svoris, siuntu, zona = parts
 
-# do not forget to output the last word if needed!
-if current_diena != None:
-    print ('%s\t%s' % (current_diena, current_count))
+    try:
+        svoris = float(svoris)
+        siuntu = int(siuntu)
+    except ValueError:
+        continue
+
+    if route != current_route:
+        if current_route is not None:
+            flush(current_route)
+        current_route = route
+        svoris_sum = 0.0
+        siuntu_sum = 0
+        zone_counts = {z: 0 for z in ZONES}
+
+    svoris_sum += svoris
+    siuntu_sum += siuntu
+    if zona in zone_counts:
+        zone_counts[zona] += 1
+
+if current_route is not None:
+    flush(current_route)

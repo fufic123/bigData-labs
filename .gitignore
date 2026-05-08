@@ -1,1 +1,8 @@
 .claude/
+venv/
+*/venv/
+*.txt.output
+deliveryLogistics-lab1/mapout.txt
+deliveryLogistics-lab1/smapout.txt
+deliveryLogistics-lab1/redout.txt
+deliveryLogistics-lab1/output/
